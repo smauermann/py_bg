@@ -200,8 +200,8 @@ class Backgammon(object):
 		self.current_player = Board.getOtherPlayer(self.current_player)
 
 
-white_player = Player(0)
-black_player = Player(1)
+# white_player = Player(0)
+# black_player = Player(1)
 
-bg = Backgammon(white_player, black_player)
-bg.run()
+# bg = Backgammon(white_player, black_player)
+# bg.run()
