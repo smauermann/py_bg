@@ -1,5 +1,4 @@
 # TODO: figure out how to efficiently batch import from a different directory
-
 from abc import ABCMeta, abstractmethod
 from board import Board, Dice
 from bgexceptions import BackgammonException, IllegalMoveException
