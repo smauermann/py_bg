@@ -318,9 +318,10 @@ class Board(object):
         return (not self.__eq__(other))
 
     def __hash__(self):
+    	""" Return a hash. """
 
     def djbhash(a_list): 
-		"""Hash function from D J Bernstein""" 
+		""" Hash function from D J Bernstein. """ 
 		h = 5381L 
 		for i in a_list: 
 			t = (h * 33) & 0xffffffffL 
@@ -328,7 +329,7 @@ class Board(object):
 		return h 
 
 	def fnvhash(a_list): 
-		"""Fowler, Noll, Vo Hash function""" 
+		""" Fowler, Noll, Vo Hash function. """ 
 		h = 2166136261 
 		for i in a_list: 
 			t = (h * 16777619) & 0xffffffffL 
