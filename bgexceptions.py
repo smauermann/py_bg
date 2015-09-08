@@ -1,7 +1,7 @@
-""" Defines some custom Errors for Backgammon. """
+
 
 class BackgammonException(Exception):
-
+	""" Super class for custom Exceptions in the Backgammon framework. """
 	def __init__(self, msg):
 		self.msg = msg
 
@@ -10,18 +10,6 @@ class BackgammonException(Exception):
 	
 
 class IllegalMoveException(BackgammonException):
-	
+	""" Exceptions related to wrong or not possible moves. """
 	def __init__(self, msg):
 		super(IllegalMoveException, self).__init__(msg)
-
-# class test(object):
-# 	def exception(self):
-# 		try:
-# 			raise BackgammonException("blabla")
-# 		except BackgammonException, e:
-# 			print "BackgammonException:", e
-
-# 		print "yeehaw"
-
-# t = test()
-# t.exception()
