@@ -34,7 +34,7 @@ class Player(object):
 		#print backgammon_obj.board
 		
 		# prompt player to chose a move
-		pick_move = raw_input("Choose from %s different possible moves: " %(num_moves))
+		pick_move = raw_input("ENTER for next turn!")#"Choose from %s different possible moves: " %(num_moves))
 		#return all_moves[pick_move - 1]
 		
 		# pick a random move
