@@ -27,10 +27,10 @@ class Player(object):
 	def chooseMove(backgammon_obj):
 		""" Requests the player to pick a move given the current backgammon situation. """
 		# get a list of all possible moves
+		print "It's {0}'s turn, with the roll: {1} ".format("white" if backgammon_obj.current_player == 0 else "black", backgammon_obj.dice)
 		all_moves = backgammon_obj.getMoves()
 		num_moves = len(all_moves)
-		print "Current player: ", backgammon_obj.current_player
-		print backgammon_obj.dice
+		
 		#print backgammon_obj.board
 		
 		# prompt player to chose a move

@@ -399,10 +399,9 @@ class Move(object):
 
 	def movePossible(self):
 		""" Returns whether or not a move is possible for current player. """
-		for i in range(len(self.used)):
-			if (self.used[i] != Move.USED and
-				MovementFactory.movePossible(self.used[i],
-				self.player, self.getCurrentBoard())):
+		for die in self.used:
+			if (die != Move.USED and
+				MovementFactory.movePossible(die, self.player, self.getCurrentBoard())):
 				return True
 		return False
 
@@ -429,16 +428,15 @@ class Move(object):
 			raise IllegalMoveException("Cannot add more movements to this move!")
 
 		use = Move.USED
-		i = 0
+		
 		# self.used is the list containing the two or four numbers rolled by the dice
-		# loop thru self.used
-		while (i < len(self.used)) and (use == Move.USED):
-			# check if dice number is not used yet and movement can be done via
-			# the rolled dice
-			if ((self.used[i] != Move.USED) and
-				(movement_obj.canUse(self.getCurrentBoard(), self.used[i]))):
-				use = i
-			i += 1
+		# loop thru self.used while no roll was not used yet
+		while use == Move.USED:
+			for n, die in enumerate(self.used):
+				# check if dice number is not used yet and movement can be done via
+				# the rolled dice
+				if die != Move.USED and (movement_obj.canUse(self.getCurrentBoard(), die)):
+					use = n
 
 		if use == Move.USED:
 			raise IllegalMoveException("You cannot make that move using the dice!")
@@ -463,7 +461,7 @@ class Move(object):
 				# return the current intermediate board
 				return self.boards[i]
 		# or the starting board, if no intermediate boards exist
-		return self.board
+		return self.board.getScratch()
 
 	def getOriginalBoard(self):
 		""" Returns the starting board of the move. """
@@ -514,9 +512,9 @@ class MovementFactory(object):
 		result = set()
 		# make a base move upon which possible movements are added
 		base_move = Move(dice_obj, board_obj, player)
-		cls.generateMoves(base_move, result)
-		#result.update(cls.generateMoves(base_move, result))
-
+		result.update(cls.generateMoves(base_move))
+		
+		print len(result)
 		return [item for item in result]
 
 	@classmethod
@@ -525,6 +523,7 @@ class MovementFactory(object):
 			and using the given dice roll. """
 		# construction of moves and their objects:
 		# a move consists of 2 or 4 movements, contained in movements list
+		# generateMoves
 
 		result = set()
 		
@@ -545,16 +544,16 @@ class MovementFactory(object):
 				# take the roll, which wasnt used yet
 				if die != Move.USED:
 					try:
-						print "bar"
 						# create a new bar move by cloning from base_move
 						bar_move = Move(base_move)
 						# destination is position 1...6 in opponents homeboard
 						destination = (Board.getHome(Board.getOtherPlayer(player))
 										+ die * Board.getDirection(player))
 						# add the movement to the move
+						# updates intermediate board and adds movement to movements
 						bar_move.addMovement(BarMovement(player, destination))
 						#cls.generateMoves(bar_move)
-						result.update(cls.generateMoves(bar_move, result))
+						result.update(cls.generateMoves(bar_move))
 					# exceptions in the try block must be handled with the corresponding
 					# exception type in the except block, otherwise script ends
 					except IllegalMoveException, e:
@@ -574,29 +573,25 @@ class MovementFactory(object):
 						for die in base_move.used:
 							if die != Move.USED:
 								try:
-									print "normal no double"
 									normal_move = Move(base_move)
 									destination = pos + die * direction
 									normal_move.addMovement(NormalMovement(player, pos, destination))
 									#cls.generateMoves(normal_move)
-									result.update(cls.generateMoves(normal_move, result))
+									result.update(cls.generateMoves(normal_move))
 								except IllegalMoveException, e:
 									#print type(e).__name__, "-", e.msg
 									pass
 					# when a double was rolled
 					else:
 						try:
-							print "normal with doubles"
 							normal_move = Move(base_move)
 							destination = pos + base_move.dice.getDie1() * direction
 							normal_move.addMovement(NormalMovement(player, pos, destination))
 							#cls.generateMoves(normal_move)
-							result.update(cls.generateMoves(normal_move, result))
+							result.update(cls.generateMoves(normal_move))
 						except IllegalMoveException, e:
 							#print type(e).__name__, "-", e.msg
 							pass
-				#update i
-				#i += direction
 
 			# lastly try any bear-off moves
 			start = Board.getHome(player) - Board.getDirection(player)
@@ -606,17 +601,15 @@ class MovementFactory(object):
 			while Board.inHomeBoard(i, player):
 				if board.getCheckers(i, player) > 0:
 					try:
-						print "bearoff"
 						bearoff_move = Move(base_move)
 						bearoff_move.addMovement(BearOffMovement(player, i))
-						result.update(cls.generateMoves(bearoff_move, result))
+						result.update(cls.generateMoves(bearoff_move))
 					except IllegalMoveException, e:
 						#print type(e).__name__, "-", e.msg
 						pass
 				#update i
 				i -= direction
 
-		print len(result)
 		return result
 
 # dice = Dice()

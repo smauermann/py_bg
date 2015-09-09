@@ -37,8 +37,7 @@ class Dice(object):
 		return self.dice[0] == self.dice[1]
 
 	def __str__(self):
-		print self.dice[0], self.dice[1],
-		return ""
+		return "{0}, {1}".format(self.dice[0], self.dice[1])
 
 
 class Board(object):
