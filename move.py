@@ -488,6 +488,10 @@ class Move(object):
 	def __ne__(self, other):
         return (not self.__eq__(other))
 
+    def __hash__(self):
+    	""" Returns the hash code of this move. """
+    	return getCurrentBoard().__hash__()
+
 
 class MovementFactory(object):
 	""" Generates all distinct moves for the given Board and the
