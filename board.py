@@ -315,12 +315,32 @@ class Board(object):
 			return False
 
 	def __ne__(self, other):
-        return (not self.__eq__(other))
+		""" Returns True when objects are not equal. """
+		return not self.__eq__(other)
 
-    def __hash__(self):
-    	""" Return a hash. """
+	def __hash__(self):
+		""" Returns hash value of the current board. """
+		base = 19283
+		base = Board.javaTempHash(base, self.off)
+		base = Board.javaTempHash(base, self.bar)
+		base = Board.javaTempHash(base, self.board)
+		base = Board.javaTempHash(base, self.colors)
+		return base
 
-    def djbhash(a_list): 
+	# following funcions are different versions for hashing
+	# the attributes of board
+	@staticmethod
+	def javaTempHash(base, a_list):
+		""" Hash function from the Java Template. """
+		for i in range(len(a_list)):
+			if a_list[i] == 0:
+				base = base * 273891
+			else:
+				base = (base + a_list[i]) ^ (a_list[i] + 55)
+		return base
+
+	@staticmethod
+	def djbhash(a_list): 
 		""" Hash function from D J Bernstein. """ 
 		h = 5381L 
 		for i in a_list: 
@@ -328,6 +348,7 @@ class Board(object):
 			h = t ^ i 
 		return h 
 
+	@staticmethod
 	def fnvhash(a_list): 
 		""" Fowler, Noll, Vo Hash function. """ 
 		h = 2166136261 
@@ -336,6 +357,10 @@ class Board(object):
 			h = t ^ i 
 		return h 
 
+b = Board()
+b.resetBoard()
+
+print b.__hash__()
 # java function definition:
 #	access - eg. public
 #	return type - eg int
