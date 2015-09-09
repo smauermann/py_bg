@@ -31,13 +31,15 @@ class Player(object):
 		num_moves = len(all_moves)
 		print "Current player: ", backgammon_obj.current_player
 		print backgammon_obj.dice
-		print backgammon_obj.board
+		#print backgammon_obj.board
 		
-		pick_move = int(raw_input("Choose from %s different possible moves: " %(num_moves)))
-		# for now: pick a random move
-		#random_move = random.choice(all_moves)
-		return all_moves[pick_move - 1]
-		#return random_move
+		# prompt player to chose a move
+		pick_move = raw_input("Choose from %s different possible moves: " %(num_moves))
+		#return all_moves[pick_move - 1]
+		
+		# pick a random move
+		random_move = random.choice(all_moves)
+		return random_move
 
 	@staticmethod
 	def makeInputVector(backgammon_obj):
@@ -185,7 +187,7 @@ class Backgammon(object):
 
 		# check if the starting board of the move to be made
 		# equals the actual current board situation
-		if not chosen_move.getOriginalBoard().equals(self.board):
+		if not chosen_move.getOriginalBoard() == self.board:
 			print "Error: Current backgammon situation and starting board for the next move are not equal!"
 			self.getMoveFromPlayer(player_obj)
 		else:
@@ -194,14 +196,14 @@ class Backgammon(object):
 	def makeMove(self, chosen_move):
 		""" Performs the provided move. """
 		self.board = chosen_move.getCurrentBoard()
-		for i in chosen_move.movements:
-			print i.toString()
+		# for i in chosen_move.movements:
+		# 	print i
 		self.dice.roll()
 		self.current_player = Board.getOtherPlayer(self.current_player)
 
 
-# white_player = Player(0)
-# black_player = Player(1)
+white_player = Player(0)
+black_player = Player(1)
 
-# bg = Backgammon(white_player, black_player)
-# bg.run()
+bg = Backgammon(white_player, black_player)
+bg.run()
