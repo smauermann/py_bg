@@ -357,10 +357,6 @@ class Board(object):
 			h = t ^ i 
 		return h 
 
-b = Board()
-b.resetBoard()
-
-print b.__hash__()
 # java function definition:
 #	access - eg. public
 #	return type - eg int

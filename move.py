@@ -21,13 +21,13 @@ class Movement(object):
 	@abstractmethod
 	def apply(self, board):
 		""" Validates this movement given the provided
- 	 		board situation. """
+			board situation. """
 		pass
 	
 	@abstractmethod
 	def canUse(self, board, die):
 		""" Returns whether or not this movement can use the given
- 			dice roll to perfrom it's movement. """
+			dice roll to perfrom it's movement. """
 		pass
 
 
@@ -122,7 +122,7 @@ class BarMovement(Movement):
 			return False
 
 	def __ne__(self, other):
-        return (not self.__eq__(other))
+		return (not self.__eq__(other))
 
 
 class BearOffMovement(Movement):
@@ -205,22 +205,22 @@ class BearOffMovement(Movement):
 
 	def apply(self, board_obj):
 		""" Validates this movement given the provided
-   			board situation. """
-   		if board_obj.getCheckers(self.start, self.player) == 0:
-   			raise IllegalMoveException("Bear-off not possible: No checkers at location!")
+			board situation. """
+		if board_obj.getCheckers(self.start, self.player) == 0:
+			raise IllegalMoveException("Bear-off not possible: No checkers at location!")
 
-   		if board_obj.getBar(self.player) > 0:
-   			raise IllegalMoveException("Bear-off not possible: Checkers from the bar must be moved first!")
+		if board_obj.getBar(self.player) > 0:
+			raise IllegalMoveException("Bear-off not possible: Checkers from the bar must be moved first!")
 
-   		# loop over whole board and check whether all checkers are in the homeboard
-   		# if not all checkers are in the homeboard, bear-off is NOT allowed
-   		for i in range(Board.NUM_POINTS):
-   			if (board_obj.getCheckers(i, self.player) > 0) and (not Board.inHomeBoard(self.player, i)):
-   				raise IllegalMoveException("Bear-off not possible: Still checkers outside of the home board!")
+		# loop over whole board and check whether all checkers are in the homeboard
+		# if not all checkers are in the homeboard, bear-off is NOT allowed
+		for i in range(Board.NUM_POINTS):
+			if (board_obj.getCheckers(i, self.player) > 0) and (not Board.inHomeBoard(self.player, i)):
+				raise IllegalMoveException("Bear-off not possible: Still checkers outside of the home board!")
 
-   		# now make the move
-   		board_obj.removeFromLocation(self.player, self.start)
-   		board_obj.moveOff(self.player)
+		# now make the move
+		board_obj.removeFromLocation(self.player, self.start)
+		board_obj.moveOff(self.player)
 
 	def __str__(self):
 		""" Returns string representation of this movement. """
@@ -234,7 +234,7 @@ class BearOffMovement(Movement):
 			return False
 
 	def __ne__(self, other):
-        return (not self.__eq__(other))
+		return (not self.__eq__(other))
 
 
 class NormalMovement(Movement):
@@ -267,39 +267,39 @@ class NormalMovement(Movement):
 
 	def apply(self, board_obj):
 		""" Validates this movement given the provided
-   			board situation. """
-   		if self.start == self.end:
-   			raise IllegalMoveException("Normal move not possible: Start and end must not be the same position!")
+			board situation. """
+		if self.start == self.end:
+			raise IllegalMoveException("Normal move not possible: Start and end must not be the same position!")
 
-   		if abs(self.start - self.end) > Dice.MAX_VALUE:
-   			raise IllegalMoveException("Normal move not possible: Move distance larger than 6!")
+		if abs(self.start - self.end) > Dice.MAX_VALUE:
+			raise IllegalMoveException("Normal move not possible: Move distance larger than 6!")
 
-   		if board_obj.getBar(self.player) > 0:
-   			raise IllegalMoveException("Normal move not possible:: Checkers from the bar must be moved first!")
+		if board_obj.getBar(self.player) > 0:
+			raise IllegalMoveException("Normal move not possible:: Checkers from the bar must be moved first!")
 
-   		if board_obj.getCheckers(self.start, self.player) == 0:
-   			raise IllegalMoveException("Normal move not possible: No checkers at the start location!")
+		if board_obj.getCheckers(self.start, self.player) == 0:
+			raise IllegalMoveException("Normal move not possible: No checkers at the start location!")
 
-   		if ((self.start > self.end) and (board_obj.getDirection(self.player) > 0) or
-   			(self.start < self.end) and (board_obj.getDirection(self.player) < 0)):
-   			raise IllegalMoveException("Normal move not possible: Backward movements are not allowed!")
+		if ((self.start > self.end) and (board_obj.getDirection(self.player) > 0) or
+			(self.start < self.end) and (board_obj.getDirection(self.player) < 0)):
+			raise IllegalMoveException("Normal move not possible: Backward movements are not allowed!")
 
-   		if board_obj.getCheckers(self.end, self.other_player) > 1:
-   			raise IllegalMoveException("Normal move not possible: End location already occupied by opponent checkers!")
+		if board_obj.getCheckers(self.end, self.other_player) > 1:
+			raise IllegalMoveException("Normal move not possible: End location already occupied by opponent checkers!")
 
-   		# now perform movement:
-   		# check first whether the move bumps the opponent
-   		if board_obj.getCheckers(self.end, self.other_player) == 1:
-   			board_obj.removeFromLocation(self.other_player, self.end)
-   			board_obj.moveToBar(self.other_player)
+		# now perform movement:
+		# check first whether the move bumps the opponent
+		if board_obj.getCheckers(self.end, self.other_player) == 1:
+			board_obj.removeFromLocation(self.other_player, self.end)
+			board_obj.moveToBar(self.other_player)
 
-   		# now perform the move
-   		board_obj.removeFromLocation(self.player, self.start)
-   		board_obj.moveToLocation(self.player, self.end)
+		# now perform the move
+		board_obj.removeFromLocation(self.player, self.start)
+		board_obj.moveToLocation(self.player, self.end)
 
-   	@classmethod
-   	def movePossible(cls, die, player, board_obj):
-   		""" Return whether or not a move is possible using the
+	@classmethod
+	def movePossible(cls, die, player, board_obj):
+		""" Return whether or not a move is possible using the
 			given dice roll by the given player on the given
 			board. Checks if bar, bear-off, or normal Movement
 			are possible. """
@@ -343,14 +343,14 @@ class NormalMovement(Movement):
 			return False
 
 	def __ne__(self, other):
-        return (not self.__eq__(other))
+		return (not self.__eq__(other))
 
 
 class Move(object):
 	""" Class which represents a move in backgammon.  Clients
- 		can either build specific moves themselves, possibly from 
- 		human input, or use the movement factory to build moves.
- 		Moves are constructed by adding a number of movements until
+		can either build specific moves themselves, possibly from 
+		human input, or use the movement factory to build moves.
+		Moves are constructed by adding a number of movements until
 		all of the dice have been used or no more moves are possible.
 		When evalutaing a move, a client can use the 
 		Move.getCurrentBoard() method, which will return the state
@@ -486,11 +486,11 @@ class Move(object):
 			return False
 
 	def __ne__(self, other):
-        return (not self.__eq__(other))
+		return (not self.__eq__(other))
 
-    def __hash__(self):
-    	""" Returns the hash code of this move. """
-    	return getCurrentBoard().__hash__()
+	def __hash__(self):
+		""" Returns the hash code of this move based on hashing the board situation. """
+		return self.getCurrentBoard().__hash__()
 
 
 class MovementFactory(object):
@@ -514,7 +514,8 @@ class MovementFactory(object):
 		result = set()
 		# make a base move upon which possible movements are added
 		base_move = Move(dice_obj, board_obj, player)
-		result.update(cls.generateMoves(base_move))
+		cls.generateMoves(base_move, result)
+		#result.update(cls.generateMoves(base_move, result))
 
 		return [item for item in result]
 
@@ -522,6 +523,9 @@ class MovementFactory(object):
 	def generateMoves(cls, base_move):
 		""" Returns a set of all possible moves given the board situation
 			and using the given dice roll. """
+		# construction of moves and their objects:
+		# a move consists of 2 or 4 movements, contained in movements list
+
 		result = set()
 		
 		# if no more movements can be added, or no more moves are possible,
@@ -541,6 +545,7 @@ class MovementFactory(object):
 				# take the roll, which wasnt used yet
 				if die != Move.USED:
 					try:
+						print "bar"
 						# create a new bar move by cloning from base_move
 						bar_move = Move(base_move)
 						# destination is position 1...6 in opponents homeboard
@@ -548,8 +553,8 @@ class MovementFactory(object):
 										+ die * Board.getDirection(player))
 						# add the movement to the move
 						bar_move.addMovement(BarMovement(player, destination))
-						cls.generateMoves(bar_move)
-						#result.update(cls.generateMoves(bar_move))
+						#cls.generateMoves(bar_move)
+						result.update(cls.generateMoves(bar_move, result))
 					# exceptions in the try block must be handled with the corresponding
 					# exception type in the except block, otherwise script ends
 					except IllegalMoveException, e:
@@ -569,22 +574,24 @@ class MovementFactory(object):
 						for die in base_move.used:
 							if die != Move.USED:
 								try:
+									print "normal no double"
 									normal_move = Move(base_move)
 									destination = pos + die * direction
 									normal_move.addMovement(NormalMovement(player, pos, destination))
-									cls.generateMoves(normal_move)
-									#result.update(cls.generateMoves(normal_move))
+									#cls.generateMoves(normal_move)
+									result.update(cls.generateMoves(normal_move, result))
 								except IllegalMoveException, e:
 									#print type(e).__name__, "-", e.msg
 									pass
 					# when a double was rolled
 					else:
 						try:
+							print "normal with doubles"
 							normal_move = Move(base_move)
 							destination = pos + base_move.dice.getDie1() * direction
 							normal_move.addMovement(NormalMovement(player, pos, destination))
-							cls.generateMoves(normal_move)
-							#result.update(cls.generateMoves(normal_move))
+							#cls.generateMoves(normal_move)
+							result.update(cls.generateMoves(normal_move, result))
 						except IllegalMoveException, e:
 							#print type(e).__name__, "-", e.msg
 							pass
@@ -595,19 +602,21 @@ class MovementFactory(object):
 			start = Board.getHome(player) - Board.getDirection(player)
 			direction = Board.getDirection(player)
 			i = start
-			for pos in range(start, start + 6 * )
+			#for pos in range(start, start + 6 * )
 			while Board.inHomeBoard(i, player):
 				if board.getCheckers(i, player) > 0:
 					try:
+						print "bearoff"
 						bearoff_move = Move(base_move)
 						bearoff_move.addMovement(BearOffMovement(player, i))
-						result.update(cls.generateMoves(bearoff_move))
+						result.update(cls.generateMoves(bearoff_move, result))
 					except IllegalMoveException, e:
 						#print type(e).__name__, "-", e.msg
 						pass
 				#update i
 				i -= direction
 
+		print len(result)
 		return result
 
 # dice = Dice()
