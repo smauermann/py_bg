@@ -37,7 +37,7 @@ class Player(object):
         
         # pick a random move
         random_board = random.choice(boards)
-        print random_board
+        #print random_board
         return random_board
 
     @staticmethod
