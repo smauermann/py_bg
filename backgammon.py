@@ -1,6 +1,5 @@
 from board import Board, Dice
-from move import Movement, BarMovement, BearOffMovement, NormalMovement,\
-Move, MovementFactory
+from move import BarMove, BearOffMove, NormalMove, BoardFactory
 import random
 
 class Player(object):
@@ -12,7 +11,7 @@ class Player(object):
 
 	def __init__(self, color):
 		""" Player can be initialized by specifying color:
-			E.g.: 'white' or 0; or 'black' and 1, respectively. """
+			E.g.: 'white' or 0 vs. 'black' or 1. """
 		if type(color) is int:
 			self.color = color
 			self.identity = next((key for key, val in Player.COLOR_CODE.items() if val == color), None)
@@ -23,34 +22,35 @@ class Player(object):
 		else:
 			print "Enter valid player: Either 'white' - 0, or 'black' - 1!"
 
-	@staticmethod
-	def chooseMove(backgammon_obj):
-		""" Requests the player to pick a move given the current backgammon situation. """
+	def choose_board(self, backgammon):
+		""" Requests the player to pick a board given the current backgammon situation. """
 		# get a list of all possible moves
-		print "\nIt's {0}'s turn, with the roll: {1} ".format("white" if backgammon_obj.current_player == 0 else "black", backgammon_obj.dice)
-		all_moves = backgammon_obj.getMoves()
-		num_moves = len(all_moves)
+		boards = BoardFactory.generate_all_boards(backgammon.current_player, backgammon.dice, backgammon.board)
+		num_boards = len(boards)
 		
-		#print backgammon_obj.board
+		#print backgammon.board
 		
 		# prompt player to chose a move
-		pick_move = raw_input("\nPress ENTER for next turn!")#"Choose from %s different possible moves: " %(num_moves))
-		#return all_moves[pick_move - 1]
+		#pick_board = int(raw_input("Pick from %s boards: " %(num_boards)))#"Choose from %s different possible moves: " %(num_moves))
+		#print boards[pick_board - 1]
+
+		#return boards[pick_board - 1]
 		
 		# pick a random move
-		random_move = random.choice(all_moves)
-		return random_move
+		random_board = random.choice(boards)
+		print random_board
+		return random_board
 
 	@staticmethod
-	def makeInputVector(backgammon_obj):
+	def board_to_vector(backgammon):
 		""" Creates a 198-dimensional input vector of the current gammon situation. """
-		board_obj = backgammon_obj.getCurrentBoard()
-		current_player = backgammon_obj.getCurrentPlayer()
+		bg_board = backgammon.get_current_board()
+		current_player = backgammon.get_current_player()
 		
-		board = board_obj.getBoard()
-		colors = board_obj.getColors()
-		bar = [board_obj.getWhiteBar(),board_obj.getBlackBar()]
-		off = [board_obj.getWhiteOff(),board_obj.getBlackOff()]
+		board = bg_board.board
+		colors = bg_board.colors
+		bar = [bg_board.get_bar(0),bg_board.get_bar(1)]
+		off = [bg_board.get_off(0),bg_board.get_off(1)]
 		
 		# initialize the vector:
 		# 4 units per point on board: 0-3 checkers --> 0-3 inputs active.
@@ -112,7 +112,7 @@ class Backgammon(object):
 		which runs the game, and the call backgammon.reset(), backgammon.run() if you
 		want to play again. """
 
-	def __init__(self, player1_obj, player2_obj):
+	def __init__(self, player1, player2):
 		# the dice
 		self.dice = Dice()
 		# internal board, which is the state before the current move
@@ -121,86 +121,72 @@ class Backgammon(object):
 		self.current_player = None
 		# list of players
 		# white = 0, black = 1
-		self.players = [player1_obj, player2_obj]
+		self.players = [player1, player2]
 		self.reset()
 	
-	def getDice(self):
-		return self.dice
-
-	def getCurrentBoard(self):
-		return self.board
-
-	def getCurrentPlayer(self):
-		return self.current_player
-
 	def reset(self):
 	  	""" Resets this backgammon instance to the initial state, with
 			a new board and determines starting player. """
-		self.board.resetBoard()
+		self.board.reset_board()
 		self.dice.roll()
-		# java sets player to black!
-		# in my version the player that rolls the higher number starts
-		if self.dice.getDie1() != self.dice.getDie2():
+		
+		# decide which player starts the game by rolling dice
+		# die1 > die2 player 0 starts and vice versa
+		# if die1==die2, roll until different
+		if self.dice.get_die1() != self.dice.get_die2():
 			# determine starting player:
 	  		# die1 rolls for white and die2 rolls for black
-			self.current_player = (0 if self.dice.getDie1() >
-									self.dice.getDie2() else 1)
+			self.current_player = (0 if self.dice.get_die1() >
+									self.dice.get_die2() else 1)
 		# make sure that dice dont show same number
-		elif self.dice.getDie1() == self.dice.getDie2():
+		elif self.dice.get_die1() == self.dice.get_die2():
 			same = True
 			# roll until different
 			while same:
 				self.dice.roll()
-				if self.dice.getDie1() != self.dice.getDie2():
-					self.current_player = (0 if self.dice.getDie1() >
-											self.dice.getDie2() else 1)
-					same = False		
-	 	
-	def getMoves(self):
-		""" Returns a list of all possible moves the player can currently make. """
-		return MovementFactory.getAllMoves(self.current_player, self.dice, self.board)
-
+				if self.dice.get_die1() != self.dice.get_die2():
+					self.current_player = (0 if self.dice.get_die1() >
+											self.dice.get_die2() else 1)
+					same = False
+		
+		# if black starts game, reverse players list
+		# because white is first initially
+		if self.current_player == 1:
+			self.players = list(reversed(self.players))
+							
 	def run(self):
 		""" Runs a game of backgammon, and does not return until the game
 			is over. Returns the player who won the game. """
-		while not self.board.isGameOver():
-			self.getMoveFromPlayer(self.players[0])
-			if self.board.isGameOver():
-				break
-
-			self.getMoveFromPlayer(self.players[1])
-			if self.board.isGameOver():
-				break
+		while not self.board.is_gameover():
+			# loop over players
+			for player in self.players:
+				# request players to choose a board
+				self.get_board_from_player(player)
+				if self.board.is_gameover():
+					break
 
 		# check whether a player has all checkers beared off
 		# and return it as winner. 
-		if self.board.getWhiteOff() == 15:
-			winner = self.players[0]
-		else:
-			winner = self.players[1]
-		return winner
+		if self.board.get_off(0) == 15:
+			winner = "white"
+		elif self.board.get_off(1) == 15:
+			winner = "black"
+		print winner
 
-	def getMoveFromPlayer(self, player_obj):
-		""" Get's a player's move and makes the move. """
-		# call Player's move() and create move from current backgammon situation
-		chosen_move = player_obj.chooseMove(self)
+	def get_board_from_player(self, player):
+		""" Receives a board from the player and initiates the next turn. """
+		board = player.choose_board(self)
+		self.next_turn(board)
 
-		# check if the starting board of the move to be made
-		# equals the actual current board situation
-		if not chosen_move.getOriginalBoard() == self.board:
-			print "Error: Current backgammon situation and starting board for the next move are not equal!"
-			self.getMoveFromPlayer(player_obj)
-		else:
-			self.makeMove(chosen_move)
-
-	def makeMove(self, chosen_move):
-		""" Performs the provided move. """
-		self.board = chosen_move.getCurrentBoard()
-		# for i in chosen_move.movements:
-		# 	print i
+	def next_turn(self, board):
+		""" Updates the board according to chosen move and starts the next turn. """
+		# update board according to chosen board
+		self.board = board
+		# roll new dice
 		self.dice.roll()
-		self.current_player = Board.getOtherPlayer(self.current_player)
-
+		# set the opponent as current_player
+		self.current_player = Board.get_opponent(self.current_player)
+		#print "\nIt's {0}'s turn, with the roll: {1} ".format("white" if self.current_player == 0 else "black", self.dice)
 
 white_player = Player(0)
 black_player = Player(1)
