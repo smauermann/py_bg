@@ -356,6 +356,7 @@ class BoardFactory(object):
 						# if yes, append new_boards
 						if tmp_board is not None:
 							new_boards.append(tmp_board)
+			
 			# check if new boards were created
 			# and if yes, replace each starting board in boards with
 			# a list of possible boards originating from each starting board
