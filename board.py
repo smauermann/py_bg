@@ -141,9 +141,10 @@ class Board(object):
         if player is not None:
             if self.colors[location] == player:
                 return self.board[location]
+            else:
+                return 0
         elif player == None:
             return self.board[location]
-        return 0
 
     def get_bar(self, player):
         """ Returns the number of checkers of a given color on the bar."""
@@ -164,7 +165,7 @@ class Board(object):
             if self.colors[i] == player:
                 # get checkers of given color at i and multiply by distance
                 # to home end point
-                result += self.getCheckers(i) * abs(base - i)
+                result += self.get_checkers(i) * abs(base - i)
 
         # add number of moves needed to clear the bar
         result += Board.NUM_POINTS * self.getBar(player)
@@ -246,24 +247,122 @@ class Board(object):
                 cls.get_home(player) - (6 * cls.get_direction(player))))
 
     def __str__(self):
-        print "--------------\n Black off: {0}\n--------------".format(self.off[Board.BLACK])
-        for i in range(Board.NUM_POINTS):
-            print "{0:2} --- {1} {2}".format(i + 1, self.board[i], ("white" if self.colors[i] == 0 else "black" if self.colors[i] == 1 else "_____"))
-            if i == 5:
-                print "--------------\n White bar: {0}\n--------------".format(self.bar[Board.WHITE])
-            if i == 17:
-                print "--------------\n Black bar: {0}\n--------------".format(self.bar[Board.BLACK])
-        print "--------------\n White off: {0}\n--------------".format(self.off[Board.WHITE]),
+        """ Prints the current board in a GNUBGish style to the console. """
+        
+        print "\n+13-14-15-16-17-18------19-20-21-22-23-24-+"
 
-        return ""
+        # left upper field:
+        # coordinates:
+        # y = 1...5
+        # x = 11 ...6
+        for y in range(1, 6):
+            print "|",
+            for x in range(11, 5, -1):
+                if x == 6:
+                    if y == 3:
+                        # bar
+                        print "{:1} | {:1}".format(self.checker_print(x, y), self.bar[Board.WHITE]),
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y)),    
+                else:
+                    print "{:1} ".format(self.checker_print(x, y)),
+            
+            # right upper field:
+            # coordinates:
+            # y = 1...5
+            # x = 5 ...0
+            for x in range(5, -1, -1):
+                if x == 5:
+                    if y == 3:
+                        print "| {:1} ".format(self.checker_print(x, y)),
+                    else:
+                        print "  | {:1} ".format(self.checker_print(x, y)),
+                if x == 0:
+                    # off
+                    if y == 3:
+                        print "{:1} | {:1}".format(self.checker_print(x, y), self.off_print(x, y))
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y))  
+                elif x != 0 and x != 5:
+                    print "{:1} ".format(self.checker_print(x, y)),
 
-    def __str__(self):
-        print "+13-14-15-16-17-18------19-20-21-22-23-24-+"
-        for i in range(1, 6):
-            print "|"
+        print "|                  |BAR|                  |OFF"
 
-            for j in range(12, 18):
-                print " "
+        # left lower field:
+        # coordinates:
+        # y = 5...1
+        # x = 12 ...17
+        for y in range(5, 0, -1):
+            print "|",
+            for x in range(12,18):
+                if x == 17:
+                    if y == 3:
+                        # bar
+                        print "{:1} | {:1}".format(self.checker_print(x, y), self.bar[Board.BLACK]),
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y)),    
+                else:
+                    print "{:1} ".format(self.checker_print(x, y)),
+
+            # right lower field:
+            # coordinates:
+            # y = 5...1
+            # x = 18 ...23
+            for x in range(18, 24):
+                if x == 18:
+                    if y == 3:
+                        print "| {:1} ".format(self.checker_print(x, y)),
+                    else:
+                        print "  | {:1} ".format(self.checker_print(x, y)),
+                if x == 23:
+                    # off
+                    if y == 3:
+                        print "{:1} | {:1}".format(self.checker_print(x, y), self.off_print(x, y))
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y))
+                elif x != 18 and x != 23:
+                    print "{:1} ".format(self.checker_print(x, y)),
+        
+        print "+12-11-10--9--8--7-------6--5--4--3--2--1-+"
+        return " "
+
+    def checker_print(self, pos, count):
+        """ Utility function for printing checkers on the GNUBG-style board. """
+        if self.colors[pos] == Board.WHITE:
+            player = Board.WHITE
+            sign = "w"
+        elif self.colors[pos] == Board.BLACK:
+            player = Board.BLACK
+            sign = "b"
+        else:
+            player = None
+            sign = " "
+
+        checkers = self.get_checkers(pos, player)
+        if player is not None:
+            if checkers == count or checkers > count:
+                return sign
+            elif checkers > count and count == 5:
+                return "+"
+            elif count > checkers:
+                return " "
+        else:
+            return " "
+
+    def off_print(self, pos, count):
+        """ Utility function for printing borne-off
+            checkers on the the GNUBG-style board. """
+        if pos in range(0, 12):
+            player = Board.BLACK
+            sign = "b"
+        elif pos in range(12, 24):
+            player = Board.WHITE
+            sign = "w"
+
+        off = self.get_off(player)
+        
+        return off
+        
     def __eq__(self, other):
         """ Compare this board with provided other board object. """
         if isinstance(other, Board): 
@@ -285,4 +384,5 @@ class Board(object):
                 hash(tuple(self.colors)) ^
                 hash(tuple(self.bar)) ^
                 hash(tuple(self.off)))
+
 

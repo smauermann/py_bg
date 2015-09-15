@@ -31,14 +31,14 @@ class Player(object):
                                             backgammon.dice, backgammon.board)
         
         # prompt player to chose a move
-        pick_board = int(raw_input("Pick from %s boards: " %(len(boards))))
-        print boards[pick_board - 1]
-        return boards[pick_board - 1]
+        #pick_board = int(raw_input("Pick from %s boards: " %(len(boards))))
+        #print boards[pick_board - 1]
+        #return boards[pick_board - 1]
         
         # pick a random move
-        #random_board = random.choice(boards)
+        random_board = random.choice(boards)
         #print random_board
-        #return random_board
+        return random_board
 
     @staticmethod
     def board_to_vector(backgammon):

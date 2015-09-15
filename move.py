@@ -362,134 +362,15 @@ class BoardFactory(object):
 			if len(new_boards) > 0:
 				boards[i] = new_boards
 
-		
 		# check if any new boards were created:
 		# if yes flatten and return
 		if len(new_boards) != 0:
 			# flatten boards, takes sublist elements and puts them a new list
 			# and returns a list containing all possible boards
+			print boards
 			return [item for sublist in boards for item in sublist]
 		# if no new boards were created:
 		# return the starting boards
 		else:
 			return None
-		
-		
-
-	
-
-# b = Board()
-# d = Dice()
-# d.roll()
-
-# BoardFactory.generate_all_boards(0, d, b)
-
-# # a handmade for loop in C-Style:
-# # used to make for loops combined with more sophisticated testing conditions
-# # usage: for i in cfor(0, lambda i: test function, lambda i: update function)
-# # lambda x: x + 1 basically is syntactic sugar for def function(x): x + 1
-# def cfor(first, test, update):
-# 	while test(first):
-# 		yield first
-#		first = update(first)
-# @classmethod
-	# def generateMoves(cls, base):
-	# 	""" Returns a set of all possible moves given the board situation
-	# 		and using the given dice roll. """
-	# 	# construction of moves and their objects:
-	# 	# a move consists of 2 or 4 movements, contained in movements list
-	# 	# equality is tested
-	# 	result = set()
-		
-	# 	# if no more movements can be added, or no more moves are possible,
-	# 	# return just this move
-	# 	# here is why it only gives you one move, because when move is full,
-	# 	# result is returned and function is exited
-	# 	if base.isFull() or (not base.movePossible()):
-	# 		result.add(base)
-	# 		return result
-
-	# 	# get current Board
-	# 	board = base.getCurrentBoard()
-	# 	player = base.player
-
-	# 	# try to add any off-bar movements to base_move
-	# 	if board.getBar(player) > 0:
-	# 		# loop thru used dice
-	# 		for i in range(len(base.used)):
-	# 			# take the roll, which wasnt used yet
-	# 			if base.used[i] != Move.USED:
-	# 				try:
-	# 					# create a new bar move by cloning from base_move
-	# 					bar = Move(base)
-	# 					# destination is position 1...6 in opponents homeboard
-	# 					destination = (Board.getHome(Board.getOtherPlayer(player))
-	# 									+ bar.used[i] * Board.getDirection(player))
-	# 					# add the movement to the move
-	# 					# updates intermediate board and adds movement to movements
-	# 					# calls canUse() and apply()
-	# 					bar_movement = BarMovement(player, destination)
-	# 					bar.addMovement(bar_movement)
-	# 					result.update(cls.generateMoves(bar))
-	# 				# exceptions in the try block must be handled with the corresponding
-	# 				# exception type in the except block, otherwise script ends
-	# 				except IllegalMoveException, e:
-	# 					#print type(e).__name__, "-", e.msg
-	# 					break
-	# 	# when no bar moves are possible,
-	# 	# try normal moves
-	# 	else:
-	# 		# loop over whole board from start to end
-	# 		for i in cfor(Board.getHome(Board.getOtherPlayer(player)) + Board.getDirection(player), lambda i: Board.onBoard(i), lambda i: i + Board.getDirection(player)):
-	# 			# find players checkers
-	# 			if board.getCheckers(i, player) > 0:
-	# 				# when two different numbers were rolled
-	# 				if len(base.used) == 2:
-	# 					# loop over dice
-	# 					for j in range(len(base.used)):
-	# 						# check if die is unused
-	# 						if base.used[j] != Move.USED:
-	# 							try:
-	# 								normal = Move(base)
-	# 								destination = i + base.used[j] * Board.getDirection(player)
-	# 								normal_movement = NormalMovement(player, i, destination)
-	# 								normal.addMovement(normal_movement)
-	# 								result.update(cls.generateMoves(normal))
-	# 							except IllegalMoveException, e:
-	# 								#print type(e).__name__, "-", e.msg
-	# 								break
-	# 				# when a double was rolled
-	# 				elif len(base.used) == 4:
-	# 					try:
-	# 						normal = Move(base)
-	# 						destination = i + base.dice.getDie1() * Board.getDirection(player)
-	# 						normal_movement = NormalMovement(player, i, destination)
-	# 						normal.addMovement(normal_movement)
-	# 						result.update(cls.generateMoves(normal))
-	# 					except IllegalMoveException, e:
-	# 						#print type(e).__name__, "-", e.msg
-	# 						break
-
-	# 		# lastly try any bear-off moves
-	# 		# loop over own homeboard
-	# 		for i in cfor(Board.getHome(player) - Board.getDirection(player), lambda i: Board.inHomeBoard(player, i), lambda i: i - Board.getDirection(player)):
-	# 			#print i
-	# 			if board.getCheckers(i, player) > 0:
-	# 				try:
-	# 					bearoff = Move(base)
-	# 					bearoff_movement = BearOffMovement(player, i)
-	# 					bearoff.addMovement(bearoff_movement)
-	# 					result.update(cls.generateMoves(bearoff))
-	# 				except IllegalMoveException, e:
-	# 					#print type(e).__name__, "-", e.msg
-	# 					break
-
-	# 	return result
-
-
-
-
-
-
-
 
