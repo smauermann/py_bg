@@ -171,10 +171,10 @@ class Backgammon(object):
         # check whether a player has all checkers beared off
         # and return it as winner. 
         if self.board.get_off(0) == 15:
-            winner = "white"
+            winner = 0
         elif self.board.get_off(1) == 15:
-            winner = "black"
-        print winner
+            winner = 1
+        return winner
 
     def get_board_from_player(self, player):
         """ Receives a board from the player and initiates the next turn. """
@@ -195,5 +195,17 @@ class Backgammon(object):
 white_player = Player(0)
 black_player = Player(1)
 
+wins = [0, 0]
 bg = Backgammon(white_player, black_player)
-bg.run()
+for i in range(1000):
+    print "Game: ", i
+    winner = bg.run()
+    bg.reset()
+
+    if winner == 0:
+        wins[0] += 1
+    elif winner == 1:
+        wins[1] += 1
+
+print wins
+

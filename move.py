@@ -252,8 +252,8 @@ class BoardFactory(object):
 			and generates all possible moves and the resulting boards.
 			Returns a list of all possible moves from all dice combinations. """
 		
-		print "Player: ", player
-		print "Dice: ", dice
+		#print "Player: ", player
+		#print "Dice: ", dice
 		# check if dice are doubles:
 		if dice.is_doubles():
 			all_dice_combinations = [[dice.get_die1()] * 4]
@@ -362,13 +362,19 @@ class BoardFactory(object):
 			# a list of possible boards originating from each starting board
 			if len(new_boards) > 0:
 				boards[i] = new_boards
+			# lets say three boards go in and only one of these can generate a
+			# new board. boards would look something like [b0, b1, [b31,..., b3n]]
+			# this will give an error when trying to iterate b0 or b1
+			# so instead put the initial board in a list and iteration works again
+			elif len(new_boards) == 0:
+				boards[i] = [boards[i]]
 
 		# check if any new boards were created:
 		# if yes flatten and return
-		if len(new_boards) != 0:
+		if len(new_boards) >= 0:
 			# flatten boards, takes sublist elements and puts them a new list
 			# and returns a list containing all possible boards
-			print boards
+			#print boards
 			return [item for sublist in boards for item in sublist]
 		# if no new boards were created:
 		# return the starting boards
