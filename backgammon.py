@@ -37,7 +37,7 @@ class Player(object):
         
         # pick a random move
         random_board = random.choice(boards)
-        #print random_board
+        print random_board
         return random_board
 
     @staticmethod
@@ -198,17 +198,17 @@ black_player = Player(1)
 
 wins = [0, 0]
 bg = Backgammon(white_player, black_player)
-# for i in range(1000):
-#     print "Game: ", i
-#     winner = bg.run()
-#     bg.reset()
+for i in range(10):
+    print "Game: ", i
+    winner = bg.run()
+    bg.reset()
 
-#     if winner == 0:
-#         wins[0] += 1
-#     elif winner == 1:
-#         wins[1] += 1
+    if winner == 0:
+        wins[0] += 1
+    elif winner == 1:
+        wins[1] += 1
 
-# print wins
+print wins
 
 # for timed runs:
 # def timed():

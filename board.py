@@ -340,10 +340,11 @@ class Board(object):
 
         checkers = self.get_checkers(pos, player)
         if player is not None:
-            if checkers == count or checkers > count:
-                return sign
-            elif checkers > count and count == 5:
+            
+            if count == 5 and checkers > 5:    
                 return "+"
+            elif checkers >= count:
+                return sign
             elif count > checkers:
                 return " "
         else:
@@ -360,7 +361,6 @@ class Board(object):
             sign = "w"
 
         off = self.get_off(player)
-        
         return off
         
     def __eq__(self, other):
@@ -384,5 +384,4 @@ class Board(object):
                 hash(tuple(self.colors)) ^
                 hash(tuple(self.bar)) ^
                 hash(tuple(self.off)))
-
 
