@@ -1,9 +1,6 @@
 # TODO: figure out how to efficiently batch import from a different directory
 from board import Board, Dice
 from bgexceptions import BackgammonException, IllegalMoveException
-# try to add some multitasking
-#from multiprocessing import Pool
-#from multiprocessing.dummy import Pool as ThreadPool
 
 
 class BarMove(object):

@@ -1,5 +1,5 @@
 from board import Board, Dice
-from multi_move import BarMove, BearOffMove, NormalMove, BoardFactory
+from move import BarMove, BearOffMove, NormalMove, BoardFactory
 import random
 
 class Player(object):
