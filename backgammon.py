@@ -1,5 +1,5 @@
 from board import Board, Dice
-from move import BarMove, BearOffMove, NormalMove, BoardFactory
+from multi_move import BarMove, BearOffMove, NormalMove, BoardFactory
 import random
 
 class Player(object):
@@ -44,6 +44,7 @@ class Player(object):
     def board_to_vector(backgammon):
         """ Creates a 198-dimensional input vector
             of the current gammon situation. """
+        # i need to fetch boards from player.choose_board()
         bg_board = backgammon.get_current_board()
         current_player = backgammon.get_current_player()
         
@@ -87,14 +88,14 @@ class Player(object):
             # unit 97 (vector[96]) for white and unit 193 (vector[192]) for black 
             white_bar_input = (len_vector / 2) - 3
             black_bar_input = len_vector - 4
-            vector[white_bar_input] = 'wBar: %s' %(white_bar_input)#bar[0] / 2.0
-            vector[black_bar_input] = 'bBar: %s' %(black_bar_input) #bar[1] / 2.0
+            vector[white_bar_input] = bar[0] / 2.0 #'wBar: %s' %(white_bar_input)
+            vector[black_bar_input] = bar[1] / 2.0 #'bBar: %s' %(black_bar_input)
             # encode off
             # white: unit 98 (vector[97]) and black: unit 194 (vector[193])
             white_off_input = white_bar_input + 1
             black_off_input = black_bar_input + 1
-            vector[white_off_input] = 'wOff: %s' %(white_off_input) #off[0] / 15.0
-            vector[black_off_input] = 'bOff: %s' %(black_off_input) #off[1] / 15.0
+            vector[white_off_input] = off[0] / 15.0  # 'wOff: %s' %(white_off_input)
+            vector[black_off_input] = off[1] / 15.0 # 'bOff: %s' %(black_off_input)
             # turn indicator
             if current_player == Board.WHITE:
                 # last units --> 0, 1
@@ -197,15 +198,32 @@ black_player = Player(1)
 
 wins = [0, 0]
 bg = Backgammon(white_player, black_player)
-for i in range(1000):
-    print "Game: ", i
-    winner = bg.run()
-    bg.reset()
+# for i in range(1000):
+#     print "Game: ", i
+#     winner = bg.run()
+#     bg.reset()
 
-    if winner == 0:
-        wins[0] += 1
-    elif winner == 1:
-        wins[1] += 1
+#     if winner == 0:
+#         wins[0] += 1
+#     elif winner == 1:
+#         wins[1] += 1
 
-print wins
+# print wins
+
+# for timed runs:
+# def timed():
+#     """Stupid test function"""
+#     bg.run()
+#     bg.reset()
+
+# if __name__ == '__main__':
+#     import timeit
+#     total = 0
+#     for i in range(10):
+#         time = timeit.timeit("timed()", setup="from __main__ import timed", number=1)
+#         print i+1,time, "s"
+#         total += time
+
+#     print "Mean:", total/10, "s"
+
 
