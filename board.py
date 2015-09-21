@@ -68,16 +68,9 @@ class Board(object):
     
     # "Constructor" for instance variables unique
     # to each instance like x = Board()
-    def __init__(self, other_board=None):
-        # provides the ability to clone a specific board, by passing
-        # it to __init__
-        if other_board is None:
-            self.reset_board()
-        elif isinstance(other_board, Board):
-            self.board = other_board.board
-            self.colors = other_board.colors
-            self.bar = other_board.bar
-            self.off = other_board.off
+    def __init__(self):
+        # initialize the board
+        self.reset_board()
 
     def reset_board(self):
         """ Resets checkers on the board to the initial configuration. """
@@ -248,14 +241,51 @@ class Board(object):
 
     def __str__(self):
         """ Prints the current board in a GNUBGish style to the console. """
-        
         print "\n+13-14-15-16-17-18------19-20-21-22-23-24-+"
 
         # left upper field:
         # coordinates:
         # y = 1...5
-        # x = 11 ...6
+        # x = 12...17
         for y in range(1, 6):
+            print "|",
+            for x in range(12, 18):
+                if x == 17:
+                    if y == 3:
+                        # bar
+                        print "{:1} |{:>2}".format(self.checker_print(x, y), self.bar[Board.BLACK]),
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y)),    
+                else:
+                    print "{:1} ".format(self.checker_print(x, y)),
+            
+            # right upper field:
+            # coordinates:
+            # y = 1...5
+            # loop over blacks starting board, ie whites homeboard
+            # x = 18...23
+            for x in range(18, 24):
+                if x == 18:
+                    if y == 3:
+                        print "|{:>2} ".format(self.checker_print(x, y)),
+                    else:
+                        print "  | {:1} ".format(self.checker_print(x, y)),
+                if x == 23:
+                    # off
+                    if y == 3:
+                        print "{:1} | {:3}".format(self.checker_print(x, y), self.off_print(x, y))
+                    else:
+                        print "{:1} |".format(self.checker_print(x, y))  
+                elif x != 18 and x != 23:
+                    print "{:1} ".format(self.checker_print(x, y)),
+
+        print "|                  |BAR|                  |OFF"
+
+        # left lower field:
+        # coordinates:
+        # y = 5...1
+        # x = 11...6
+        for y in range(5, 0, -1):
             print "|",
             for x in range(11, 5, -1):
                 if x == 6:
@@ -266,11 +296,12 @@ class Board(object):
                         print "{:1} |".format(self.checker_print(x, y)),    
                 else:
                     print "{:1} ".format(self.checker_print(x, y)),
-            
-            # right upper field:
+
+            # right lower field:
             # coordinates:
-            # y = 1...5
-            # x = 5 ...0
+            # y = 5...1
+            # loop over white start, ie blacks homeboard
+            # x = 5...0
             for x in range(5, -1, -1):
                 if x == 5:
                     if y == 3:
@@ -280,47 +311,10 @@ class Board(object):
                 if x == 0:
                     # off
                     if y == 3:
-                        print "{:1} | {:1}".format(self.checker_print(x, y), self.off_print(x, y))
-                    else:
-                        print "{:1} |".format(self.checker_print(x, y))  
-                elif x != 0 and x != 5:
-                    print "{:1} ".format(self.checker_print(x, y)),
-
-        print "|                  |BAR|                  |OFF"
-
-        # left lower field:
-        # coordinates:
-        # y = 5...1
-        # x = 12 ...17
-        for y in range(5, 0, -1):
-            print "|",
-            for x in range(12,18):
-                if x == 17:
-                    if y == 3:
-                        # bar
-                        print "{:1} | {:1}".format(self.checker_print(x, y), self.bar[Board.BLACK]),
-                    else:
-                        print "{:1} |".format(self.checker_print(x, y)),    
-                else:
-                    print "{:1} ".format(self.checker_print(x, y)),
-
-            # right lower field:
-            # coordinates:
-            # y = 5...1
-            # x = 18 ...23
-            for x in range(18, 24):
-                if x == 18:
-                    if y == 3:
-                        print "| {:1} ".format(self.checker_print(x, y)),
-                    else:
-                        print "  | {:1} ".format(self.checker_print(x, y)),
-                if x == 23:
-                    # off
-                    if y == 3:
-                        print "{:1} | {:1}".format(self.checker_print(x, y), self.off_print(x, y))
+                        print "{:1} | {:3}".format(self.checker_print(x, y), self.off_print(x, y))
                     else:
                         print "{:1} |".format(self.checker_print(x, y))
-                elif x != 18 and x != 23:
+                elif x != 5 and x != 0:
                     print "{:1} ".format(self.checker_print(x, y)),
         
         print "+12-11-10--9--8--7-------6--5--4--3--2--1-+"
@@ -355,13 +349,13 @@ class Board(object):
             checkers on the the GNUBG-style board. """
         if pos in range(0, 12):
             player = Board.BLACK
-            sign = "b"
+            sign = "black"
         elif pos in range(12, 24):
             player = Board.WHITE
-            sign = "w"
+            sign = "white"
 
         off = self.get_off(player)
-        return off
+        return str(off) + " " + str(sign)
         
     def __eq__(self, other):
         """ Compare this board with provided other board object. """
@@ -384,4 +378,7 @@ class Board(object):
                 hash(tuple(self.colors)) ^
                 hash(tuple(self.bar)) ^
                 hash(tuple(self.off)))
+
+b = Board()
+print b
 

@@ -81,9 +81,6 @@ class BearOffMove(object):
     #   bear off next highest checker
     
     def __init__(self, player, die, board, start):
-        # calls the __init__ of the super class Movement with player 
-        # as the argument, makes it an instance attribute
-        # within this class too
         self.player = player
         self.die = die
         self.board = board.copy_board()
@@ -95,25 +92,12 @@ class BearOffMove(object):
 
     def can_use(self):
         """ Returns whether or not this movement can use the given
-            dice roll to perform its movement. """
-        # # returns 1 for white, black -1
-        # direction = Board.get_direction(self.player)
-        
-        # # end must be start of the own homeboard
-        # # which is 18 for white, and 5 for black
-        # end = Board.get_home(self.player) - (direction * 6)
-
-        # # loop from start position of movement towards the own starting zone
-        # # (the opponents homeboard), while staying in own homeboard
-        # for i in range(self.start - direction, end - direction, -direction):
-        #   if self.board.get_checkers(i, self.player) > 0:
-        #       # check if roll matches homeboard position 1..6
-        #       return 
-        
-        # if die roll is higher than highest checkers in homeboard,
-        # the highest checker can be removed    
+            dice roll to perform its movement. """     
         if self.die == abs(self.start - Board.get_home(self.player)):
             return True
+        # if die roll is higher than highest checkers in homeboard,
+        # the highest checker can be removed
+        # this can be done only once
         elif self.die >= abs(self.start - Board.get_home(self.player)):
             return True
         else:
@@ -145,7 +129,7 @@ class BearOffMove(object):
         # now make the move
         self.board.remove_from_location(self.player, self.start)
         self.board.move_off(self.player)
-
+        
         return self.board
 
     def __str__(self):
@@ -210,10 +194,6 @@ class NormalMove(object):
         if self.board.get_checkers(self.end, self.other_player) > 1:
             raise IllegalMoveException("Normal move not possible: \
                         End location already occupied by opponent checkers!")
-        
-        if self.board.get_bar(self.player) > 0:
-            raise IllegalMoveException("Normal move not possible: \
-                                    Checkers from the bar must be moved first!")
 
         # now perform movement:
         # check first whether the move bumps the opponent
@@ -251,8 +231,8 @@ class BoardFactory(object):
         """ Function takes an initial backgammon situation (player, dice, board),
             and generates all possible moves and the resulting boards.
             Returns a list of all possible moves from all dice combinations. """
-        #print "Player: ", player
-        #print "Dice: ", dice
+        print "Player: ", player
+        print "Dice: ", dice
         # check if dice are doubles:
         if dice.is_doubles():
             all_dice_combinations = [[dice.get_die1()] * 4]
@@ -272,6 +252,7 @@ class BoardFactory(object):
             boards = [board]
             # loop over die in one dice combination
             for die in all_dice:
+                
                 # compute all boards for die on all previously generated boards
                 # or the initial board of this turn
                 computed_boards = cls.compute_boards(player, die, boards)

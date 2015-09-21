@@ -34,7 +34,7 @@ class Player(object):
         #pick_board = int(raw_input("Pick from %s boards: " %(len(boards))))
         #print boards[pick_board - 1]
         #return boards[pick_board - 1]
-        
+        bla = raw_input("Next turn!")
         # pick a random move
         random_board = random.choice(boards)
         print random_board
@@ -115,8 +115,7 @@ class Backgammon(object):
         two players, execute backgammon.run(), which runs the game, and
         the call backgammon.reset(), backgammon.run() if you
         want to play again. """
-
-    def __init__(self, player1, player2):
+    def __init__(self):
         # the dice
         self.dice = Dice()
         # internal board, which is the state before the current move
@@ -125,7 +124,7 @@ class Backgammon(object):
         self.current_player = None
         # list of players
         # white = 0, black = 1
-        self.players = [player1, player2]
+        self.players = [Player('white'), Player('black')]
         self.reset()
     
     def reset(self):
@@ -193,22 +192,10 @@ class Backgammon(object):
         self.current_player = Board.get_opponent(self.current_player)
         #print "\nIt's {0}'s turn, with the roll: {1} ".format("white" if self.current_player == 0 else "black", self.dice)
 
-white_player = Player(0)
-black_player = Player(1)
-
 wins = [0, 0]
-bg = Backgammon(white_player, black_player)
-for i in range(10):
-    print "Game: ", i
-    winner = bg.run()
-    bg.reset()
-
-    if winner == 0:
-        wins[0] += 1
-    elif winner == 1:
-        wins[1] += 1
-
-print wins
+bg = Backgammon()
+bg.run()
+bg.reset()
 
 # for timed runs:
 # def timed():
