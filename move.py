@@ -231,8 +231,7 @@ class BoardFactory(object):
         """ Function takes an initial backgammon situation (player, dice, board),
             and generates all possible moves and the resulting boards.
             Returns a list of all possible moves from all dice combinations. """
-        print "Player: ", player
-        print "Dice: ", dice
+        
         # check if dice are doubles:
         if dice.is_doubles():
             all_dice_combinations = [[dice.get_die1()] * 4]

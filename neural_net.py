@@ -17,7 +17,8 @@ class InputLayer(object):
     def __init__(self, size):
         self.size = size
         self.output_values = None
-        
+        self.layer_type = 'input'
+
     def get_input(self, input_values):
         """ Get input from preceeding layer or from the environment.
             Latter in case of input layer. """
@@ -78,8 +79,9 @@ class BaseLayer(object):
 
     def reset_e_traces(self):
         if self.layer_type == 'hidden':
-            self.e_traces = np.zeros((self.size, self.prior_layer.size, self.next_layer.size))
-        else:
+            self.e_traces = np.zeros((self.size, self.prior_layer.size, \
+                                                    self.next_layer.size))
+        elif self.next_layer != None:
             self.e_traces = np.zeros_like(self.weights)
 
     def __str__(self):
@@ -130,13 +132,15 @@ class NeuralNetwork(object):
             # dict containing all the network's layers
             # naming convention will use the keys: input, hidden1 ...hiddenN, output
             # a dict of all layers is convenient for saving its state
-            self.network_layers = {}
-            
-            # build layers and connect them
-            self.build_layers()
+            self.layer_dict = {}
+            # list containing all layers
+            self.layer_list = []
+            # build layers, connect them, set weights, set eligibility traces
+            self.initialize_layers()
         
         # check if string was provided for restoring net from file
         elif type(restore_from_file) == str:
+            # perhaps i must put a while True: around try/except block  
             # try to load file
             try:
                 saved_things = self.restore_network(restore_from_file)
@@ -145,40 +149,44 @@ class NeuralNetwork(object):
             except IOError:
                 filename = raw_input("Enter correct filename \
                                         (default = neural_net.pkl): ")
-            
             for thing in saved_things:
                 if type(thing) == dict:
-                    self.network_layers = thing
+                    self.layer_dict = thing
                 elif type(thing) == list:
                     self.hidden_sizes = thing
 
-    def build_layers(self):
+    def initialize_layers(self):
         """ Constructs network layers with provided sizes. """
-        tmp_layers = []
         # create input layer and add to list
         input_layer = InputLayer(self.input_size)
-        tmp_layers.append(input_layer)
+        self.layer_list.append(input_layer)
         
         # create hidden layers and add to list
         if self.hidden_sizes:
-            for i, layer_size in enumerate(self.hidden_sizes):
-                hidden_layer = HiddenLayer(layer_size)
-                tmp_layers.append(hidden_layer)
+            for i, size in enumerate(self.hidden_sizes):
+                hidden_layer = HiddenLayer(size)
+                self.layer_list.append(hidden_layer)
         
         # create output layer and add to list 
         output_layer = OutputLayer(self.output_size)
-        tmp_layers.append(output_layer)
+        self.layer_list.append(output_layer)
         
-        # connect the layers
-        for i in range(len(tmp_layers) - 1):
-            self.connect_layers(tmp_layers[i], tmp_layers[i + 1])
+        # connect the layers, also initializes weights
+        for i in range(len(self.layer_list) - 1):
+            self.connect_layers(self.layer_list[i], self.layer_list[i + 1])
 
-        # add connected layers to the interal dict network_layers
-        self.network_layers['input'] = tmp_layers[0]
-        self.network_layers['output'] = tmp_layers[-1]
+        # initialize eligibility traces
+        for layer in self.layer_list:
+            # dont set e_traces for input layer, it has none
+            if layer.layer_type != 'input':
+                layer.reset_e_traces()
+
+        # add connected layers to the interal dict layer_dict
+        self.layer_dict['input'] = self.layer_list[0]
+        self.layer_dict['output'] = self.layer_list[-1]
         if self.hidden_sizes:
-            for i in range(1, len(tmp_layers) - 1):    
-                self.network_layers['hidden' + str(i)] = tmp_layers[i]
+            for i in range(1, len(self.layer_list) - 1):    
+                self.layer_dict['hidden' + str(i)] = self.layer_list[i]
     
     def connect_layers(self, layer1, layer2, weights=None):
         """ Connects the layers of the network, sets weights (either random or
@@ -194,15 +202,22 @@ class NeuralNetwork(object):
         else:
             layer2.weights = weights
 
-        layer2.reset_e_traces()
+    def inspect_layer(self, layer_name):
+        """ The function returns the requested layer.
+            Layers are named as follows:
+                * 'input'
+                * 'hidden1' ... 'hiddenN'
+                * 'output'. """
+        
+        return self.layer_dict[layer_name]
 
     def get_network_output(self, input_values):
         """ Computes the output of the network
             given the provided input. """
         # feed the network with input
-        self.network_layers['input'].get_input(input_values)
+        self.layer_dict['input'].get_input(input_values)
         # return the computed output
-        return self.network_layers['output'].compute_output()
+        return self.layer_dict['output'].compute_output()
 
     @staticmethod
     def compute_gradient(layer):
@@ -210,52 +225,60 @@ class NeuralNetwork(object):
         # layer_output is an array 
         return layer.output_values * (1 - layer.output_values)
     
-    def back_prop(self):#, current_input, current_output, next_output):
+    def back_prop(self, current_input, current_output, expected_output):
         """ Computes eligibility traces and backpropagates an error back
             through the network. """ 
-        output_layer = self.network_layers['output']
         
-        # extract the hidden layers from network_layers dict
+        input_layer = self.layer_dict['input']
+        output_layer = self.layer_dict['output']
+        # extract the hidden layers from layer_dict dict
         # figure out how to sort hidden layers when more than one!
-        hidden_layer = self.network_layers['hidden1']
-        #for key, layer in self.network_layers.items():
-            #if key.startswith('hidden'):
-                #hidden_layers.append(layer)
+        hidden_layer = self.layer_dict['hidden1']
     
         # compute eligibility traces for output layer (ie between hidden and output)
         # shape of e_traces array must be identical to corresponding weight array
         output_layer.e_traces = self.LAMBDA * output_layer.e_traces \
-                                # cross product between hidden output and output layer
-                                # resulting array contains product of each
-                                # hidden unit and each output unit:
-                                # h1*y1, h1*y2
-                                # h2*y1, h2*y2
-                                # h3*y1, h3*y2 ... shape will be (40x2)
-                                + np.dot(hidden_layer.output_values, self.compute_gradient(output_layer).T)
+                                + np.dot(hidden_layer.output_values, \
+                                        self.compute_gradient(output_layer).T)
 
         # compute e_traces for hidden layer (ie between input and hidden layer)
-        # lambda * e + (gradient(y) x Wout x grad(hidden) x input)
-        hidden_layer.e_traces = self.LAMBDA * hidden_layer.e_traces \
-                                + np.dot()
+        output_grad = self.compute_gradient(output_layer)
+        hidden_grad = self.compute_gradient(hidden_layer)
+        # loop over output layer
+        for i in range(output_layer.size):
+            # this will have dimension of (1x40)
+            scalar_product = (output_grad[i] * output_layer.weights[i,:] * \
+                                               hidden_layer.output_values)
+            # the hidden e_traces array is of shape (40(hidden)x198(input)x2(output))
+            hidden_layer.e_traces[:,:,i] = self.LAMBDA \
+                                            * hidden_layer.e_traces[:,:,i] \
+                                            + np.dot(scalar_product.T, \
+                                            current_input)
 
         # the error between next and current network output
         # array contains (error y1, error y2)
-        output_error = (next_output - current_output)
+        output_error = (expected_output - current_output)
 
         # update output layer weights (ie between hidden and output)
         # learning rate BETA used here
-        # first column of e_trace * output_error[0] --> applies to output unit 1
-        # second colum of e_trace * output_error[1] --> applies to output unit 2
-        # loop over output layers
+        # loop over output layer
         for i in range(output_layer.size):
             output_layer.weights[i,:] += self.BETA * output_error[i] * output_layer.e_traces[i]
 
+        # update hidden layer weights, that shit was difficult man
+        # here learning rate ALPHA is used
+        # loop over output layer
+        for i in range(output_layer.size):
+            # loop over hidden layer
+            for j in range(hidden_layer.size):
+                hidden_layer.weights[j,:] += self.ALPHA * output_error[i] \
+                                                * hidden_layer.e_traces[j,:,i] 
 
     def save_current_network(self, filename='neural_net.pkl'):
         """ Save the current state of the network to file. """
-        # save network_layers dict and the number of hidden units
+        # save layer_dict dict and the number of hidden units
         # put both in a list and loop over it to save both objects
-        things_to_save = [self.network_layers, self.hidden_sizes]
+        things_to_save = [self.layer_dict, self.hidden_sizes]
         
         with open(filename, 'wb') as fhandle:
             pickle.dump(len(things_to_save), fhandle)
