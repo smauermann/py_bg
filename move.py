@@ -360,20 +360,3 @@ class BoardFactory(object):
         else:
             return None
     
-
-# def timed():
-#     """Stupid test function"""
-#     b = Board()
-#     d = Dice()
-#     d.roll()
-#     BoardFactory.generate_all_boards(0, d, b)
-
-# if __name__ == '__main__':
-#     import timeit
-    
-#     time = timeit.timeit("timed()", setup="from __main__ import timed", number=10)
-
-#     print "Mean:", time/10, "s"
-    
-    
-

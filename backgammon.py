@@ -1,6 +1,6 @@
 from board import Board, Dice
-from player import Player
-
+from player import Player, RandomPlayer
+from neural_net import NeuralNetwork
 
 class Backgammon(object):
     """ This class wraps all of the backgammon functionality. Basically,
@@ -13,12 +13,24 @@ class Backgammon(object):
         self.dice = Dice()
         # internal board, which is the state before the current move
         self.board = Board()
+        # the neural network used by the players, both players share the same net
+        self.neural_network = NeuralNetwork(198, 40, 2)
         # color of the current player
         self.current_player = None
+        self.winner = None
         # list of players
-        # white = 0, black = 1
-        self.players = [Player('white'), Player('black')]
+        # learning_mode is True per default, pass False as second parameter
+        # to Player() to disable network training
+        self.players = [Player('white', self.neural_network), \
+                        Player('black', self.neural_network)]
         self.reset()
+    
+    def save_network(self):
+        """ Saves the Neural Network of this Backgammon instance to a file. """
+        self.neural_network.save_network()
+
+    def restore_network(self):
+        self.neural_network.restore_network()
     
     def reset(self):
         """ Resets this backgammon instance to the initial state, with
@@ -57,53 +69,58 @@ class Backgammon(object):
             # loop over players
             for player in self.players:
                 # request players to choose a board
-                self.get_board_from_player(player)
+                self.get_move(player)
                 if self.board.is_gameover():
                     break
 
         # check whether a player has all checkers beared off
         # and return it as winner. 
-        if self.board.get_off(0) == 15:
-            winner = 0
-        elif self.board.get_off(1) == 15:
-            winner = 1
-        return winner
+        if self.board.get_off(Board.WHITE) == 15:
+            for player in self.players:
+                if player.color == Board.WHITE:
+                    player.won(self.board)
+                    self.winner = player
+                else:
+                    player.lost(self.board)
+        elif self.board.get_off(Board.BLACK) == 15:
+            for player in self.players:
+                if player.color == Board.BLACK:
+                    player.won(self.board)
+                    self.winner = player
+                else:
+                    player.lost(self.board)
+        
+        return self.winner
+        
+    def get_move(self, player):
+        """ Receives a board from the player and applies the move. """
+        new_board = player.choose_move(self)
+        self.apply_move(new_board)
 
-    def get_board_from_player(self, player):
-        """ Receives a board from the player and initiates the next turn. """
-        board = player.choose_board(self)
-        self.next_turn(board)
-
-    def next_turn(self, board):
+    def apply_move(self, new_board):
         """ Updates the board according to chosen move
             and initiates the next turn. """
         # update board according to chosen board
-        self.board = board
+        self.board = new_board
+        #print self.board
         # roll new dice
         self.dice.roll()
         # set the opponent as current_player
         self.current_player = Board.get_opponent(self.current_player)
         #print "\nIt's {0}'s turn, with the roll: {1} ".format("white" if self.current_player == 0 else "black", self.dice)
 
-wins = [0, 0]
-bg = Backgammon()
-bg.run()
-bg.reset()
 
-# for timed runs:
-# def timed():
-#     """Stupid test function"""
-#     bg.run()
-#     bg.reset()
+if __name__ == '__main__':
 
-# if __name__ == '__main__':
-#     import timeit
-#     total = 0
-#     for i in range(10):
-#         time = timeit.timeit("timed()", setup="from __main__ import timed", number=1)
-#         print i+1,time, "s"
-#         total += time
+    bg = Backgammon()
+    #bg.restore_network()
+    
+    for i in range(1000):
+        bg.run()
+        print "Game: {}, {} wins.".format(i + 1, bg.winner.identity)
+        bg.reset()
 
-#     print "Mean:", total/10, "s"
-
+    bg.save_network()
+    #nn = NeuralNetwork(198, [40], 2)
+    #print nn.inspect_layer('output')
 

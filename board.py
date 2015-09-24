@@ -139,6 +139,12 @@ class Board(object):
         elif player == None:
             return self.board[location]
 
+    def get_board(self):
+        return self.board
+
+    def get_colors(self):
+        return self.colors
+
     def get_bar(self, player):
         """ Returns the number of checkers of a given color on the bar."""
         return self.bar[player]
@@ -378,7 +384,4 @@ class Board(object):
                 hash(tuple(self.colors)) ^
                 hash(tuple(self.bar)) ^
                 hash(tuple(self.off)))
-
-b = Board()
-print b
 
