@@ -9,7 +9,7 @@ class BarMove(object):
         self.player = player
         self.other_player = Board.get_opponent(player)
         self.die = die
-        self.board = board.copy_board()
+        self.board = Board(board)
         
         # check if end is on the board
         if not Board.on_board(end):
@@ -83,7 +83,7 @@ class BearOffMove(object):
     def __init__(self, player, die, board, start):
         self.player = player
         self.die = die
-        self.board = board.copy_board()
+        self.board = Board(board)
         
         if not Board.on_board(start):
             raise IllegalMoveException("Start is not on the board!")
@@ -95,10 +95,10 @@ class BearOffMove(object):
             dice roll to perform its movement. """     
         if self.die == abs(self.start - Board.get_home(self.player)):
             return True
-        # if die roll is higher than highest checkers in homeboard,
-        # the highest checker can be removed
-        # this can be done only once
-        elif self.die >= abs(self.start - Board.get_home(self.player)):
+        # if no legal moves are possible, the player is required to remove
+        # ONE checker from the highest point
+        elif self.die > abs(self.start - Board.get_home(self.player)):
+            self.board.no_more_bearoff = True
             return True
         else:
             return False
@@ -109,7 +109,11 @@ class BearOffMove(object):
         if not self.can_use():
             raise IllegalMoveException("Bear-off not possible: \
                                         Cannot use dice for this movement!")
-            
+        
+        if self.board.no_more_bearoff == True:
+            raise IllegalMoveException("Bear-off not possible: \
+                                        Further bear-off not legal!")
+
         if self.board.get_checkers(self.start, self.player) == 0:
             raise IllegalMoveException("Bear-off not possible: \
                                         No checkers at location!")
@@ -154,7 +158,7 @@ class NormalMove(object):
         self.player = player
         self.other_player = Board.get_opponent(player)
         self.die = die
-        self.board = board.copy_board()
+        self.board = Board(board)
 
         if (not Board.on_board(start)) or (not Board.on_board(end)):
             raise IllegalMoveException("Start or end is not on the board!")

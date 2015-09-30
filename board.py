@@ -68,10 +68,24 @@ class Board(object):
     
     # "Constructor" for instance variables unique
     # to each instance like x = Board()
-    def __init__(self):
-        # initialize the board
-        self.reset_board()
-
+    def __init__(self, other_board=None):
+        if other_board is None:
+            # initialize the board
+            self.board = None
+            self.colors = None
+            self.bar = None
+            self.off = None
+            # highest checker can be legally beared off if no other legal moves
+            # are possible, but this is limited to only one checker/turn
+            self.no_more_bearoff = False
+            self.reset_board()
+        else:
+            self.board = copy.deepcopy(other_board.get_board())
+            self.colors = copy.deepcopy(other_board.get_colors())
+            self.bar = copy.deepcopy(other_board.bar)
+            self.off = copy.deepcopy(other_board.off)
+            self.no_more_bearoff = other_board.no_more_bearoff
+    
     def reset_board(self):
         """ Resets checkers on the board to the initial configuration. """
         self.board = [0] * Board.NUM_POINTS
