@@ -1,6 +1,6 @@
-# TODO: figure out how to efficiently batch import from a different directory
 from board import Board, Dice
 from bgexceptions import BackgammonException, IllegalMoveException
+#from numba import jit
 
 
 class BarMove(object):
@@ -17,6 +17,8 @@ class BarMove(object):
         else:
             self.end = end
 
+    def move_possible(self):
+        """ Checks if"""
     def make_move(self):
         """ Validates the movement given the provided board situation. """
         if not (self.die == abs(Board.get_home(self.other_player) - self.end)):
@@ -50,6 +52,9 @@ class BarMove(object):
         self.board.remove_from_bar(self.player)
         self.board.move_to_location(self.player, self.end)
 
+        # update move history of the board
+        self.board.update_move_history(self.__str__())
+        
         return self.board
 
     def __str__(self):
@@ -95,10 +100,16 @@ class BearOffMove(object):
             dice roll to perform its movement. """     
         if self.die == abs(self.start - Board.get_home(self.player)):
             return True
-        # if no legal moves are possible, the player is required to remove
-        # ONE checker from the highest point
+        # if no checker in rolled number, the player is required to remove
+        # a checker from the highest point
         elif self.die > abs(self.start - Board.get_home(self.player)):
-            self.board.no_more_bearoff = True
+            direction = Board.get_direction(self.player)
+            # check if there are no other checkers left to start point
+            # loop from start towards the bar
+            for i in range(self.start - direction, Board.get_home(self.player) \
+                                    - (7 * direction), - direction):
+                if self.board.get_checkers(i, self.player) > 0:
+                    return False
             return True
         else:
             return False
@@ -109,10 +120,6 @@ class BearOffMove(object):
         if not self.can_use():
             raise IllegalMoveException("Bear-off not possible: \
                                         Cannot use dice for this movement!")
-        
-        if self.board.no_more_bearoff == True:
-            raise IllegalMoveException("Bear-off not possible: \
-                                        Further bear-off not legal!")
 
         if self.board.get_checkers(self.start, self.player) == 0:
             raise IllegalMoveException("Bear-off not possible: \
@@ -134,6 +141,9 @@ class BearOffMove(object):
         self.board.remove_from_location(self.player, self.start)
         self.board.move_off(self.player)
         
+        # update move history of the board
+        self.board.update_move_history(self.__str__())
+
         return self.board
 
     def __str__(self):
@@ -209,6 +219,9 @@ class NormalMove(object):
         self.board.remove_from_location(self.player, self.start)
         self.board.move_to_location(self.player, self.end)
         
+        # update move history of the board
+        self.board.update_move_history(self.__str__())
+
         return self.board
 
     def __str__(self):
@@ -235,6 +248,7 @@ class BoardFactory(object):
         """ Function takes an initial backgammon situation (player, dice, board),
             and generates all possible moves and the resulting boards.
             Returns a list of all possible moves from all dice combinations. """
+        board.reset_move_history()
         
         # check if dice are doubles:
         if dice.is_doubles():
@@ -255,7 +269,6 @@ class BoardFactory(object):
             boards = [board]
             # loop over die in one dice combination
             for die in all_dice:
-                
                 # compute all boards for die on all previously generated boards
                 # or the initial board of this turn
                 computed_boards = cls.compute_boards(player, die, boards)
@@ -268,16 +281,26 @@ class BoardFactory(object):
             # now repeat this process for the next dice combination
             all_boards.append(boards)
 
-        # flatten removes dimensions --> instead of list of lists of lists,
-        # this will return a list with all possible moves (ie boards) 
+        # list comprehension for transforming list of board-lists into list of boards
         lst = [item for sublist in all_boards for item in sublist]
         # transform list to set to get rid of duplicate boards
         # boards entering a set get key depending on their hash value and
         # identical boards will have identical hashes and removed from the set
-        result = set(lst)
+        board_set = set(lst)
         # now transfrom back into list, because sets are unordered and cant
         # be accessed by keys directly
-        return list(result)
+        board_list = list(board_set)
+        
+        # filter out incomplete boards:
+        # sometimes a putative board omits a possible move,
+        # this is due to the construction of compute_boards() which only takes
+        # one die into account and disregards the other die
+        # determine number of moves, that all boards must contain
+        max_moves = max([len(item.move_history) for item in board_list])
+        # only keep those boards in the list that have max amount of moves
+        board_list = [b for b in board_list if len(b.move_history) == max_moves]
+        
+        return board_list
 
     @staticmethod
     def compute_boards(player, die, boards):
@@ -294,17 +317,14 @@ class BoardFactory(object):
                     # make a bar move, and return the resulting board
                     destination = Board.get_home(Board.get_opponent(player)) + \
                                             die * Board.get_direction(player)
-                    #print "bar dest: ", destination + 1
                     bar_move = BarMove(player, die, brd, destination)
                     tmp_board = bar_move.make_move()
-                    #print "BarMove"
                 except IllegalMoveException:
                     tmp_board = None
                 # make sure a bar move was legal and a new board was generated
                 # if yes, append new_boards
                 if tmp_board is not None:
                     new_boards.append(tmp_board)
-            
             # try normal or bear-off moves:
             else:   
                 # loop over whole board
@@ -316,7 +336,6 @@ class BoardFactory(object):
                             destination = pos + (die * Board.get_direction(player))
                             normal_move = NormalMove(player, die, brd, pos, destination)
                             tmp_board = normal_move.make_move()
-                            #print "NormalMove"
                         except IllegalMoveException, e:
                             tmp_board = None
                         # make sure normal move was legal and a new board was generated
@@ -332,7 +351,6 @@ class BoardFactory(object):
                             # try to bear off checkers and return resulting board
                             bear_off_move = BearOffMove(player, die, brd, pos)
                             tmp_board = bear_off_move.make_move()
-                            #print "BearOffMove"
                         except IllegalMoveException, e:
                             tmp_board = None
                         # make sure bearoff move was legal and a new board was generated
@@ -357,10 +375,9 @@ class BoardFactory(object):
         if len(new_boards) >= 0:
             # flatten boards, takes sublist elements and puts them a new list
             # and returns a list containing all possible boards
-            #print boards
             return [item for sublist in boards for item in sublist]
         # if no new boards were created:
-        # return the starting boards
+        # return None
         else:
             return None
     

@@ -2,6 +2,7 @@ from random import randint
 import copy
 from bgexceptions import BackgammonException, IllegalMoveException
 
+
 class Dice(object):
     """ Roll da dice! """   
     
@@ -75,16 +76,20 @@ class Board(object):
             self.colors = None
             self.bar = None
             self.off = None
-            # highest checker can be legally beared off if no other legal moves
-            # are possible, but this is limited to only one checker/turn
-            self.no_more_bearoff = False
+            self.move_history = []
             self.reset_board()
         else:
-            self.board = copy.deepcopy(other_board.get_board())
-            self.colors = copy.deepcopy(other_board.get_colors())
-            self.bar = copy.deepcopy(other_board.bar)
-            self.off = copy.deepcopy(other_board.off)
-            self.no_more_bearoff = other_board.no_more_bearoff
+            # way faster than copy.deepcopy()
+            self.board = list(other_board.board)
+            self.colors = list(other_board.colors)
+            self.bar = list(other_board.bar)
+            self.off = list(other_board.off)
+            self.move_history = list(other_board.move_history)
+            # self.board = copy.deepcopy(other_board.get_board())
+            # self.colors = copy.deepcopy(other_board.get_colors())
+            # self.bar = copy.deepcopy(other_board.bar)
+            # self.off = copy.deepcopy(other_board.off)
+            # self.move_history = copy.deepcopy(other_board.move_history)
     
     def reset_board(self):
         """ Resets checkers on the board to the initial configuration. """
@@ -96,6 +101,12 @@ class Board(object):
         for i,loc in enumerate(Board.INITIAL_LOCATIONS):
             self.board[loc] = Board.INITIAL_NUMOFCHECKERS[i]
             self.colors[loc] = Board.INITIAL_COLORS[i]
+
+    def update_move_history(self, move_string):
+        self.move_history.append(move_string)
+
+    def reset_move_history(self):
+        self.move_history = []
 
     def copy_board(self):
         """ Return a deep copy of the current board,
@@ -152,12 +163,6 @@ class Board(object):
                 return 0
         elif player == None:
             return self.board[location]
-
-    def get_board(self):
-        return self.board
-
-    def get_colors(self):
-        return self.colors
 
     def get_bar(self, player):
         """ Returns the number of checkers of a given color on the bar."""
@@ -261,6 +266,7 @@ class Board(object):
 
     def __str__(self):
         """ Prints the current board in a GNUBGish style to the console. """
+        
         print "\n+13-14-15-16-17-18------19-20-21-22-23-24-+"
 
         # left upper field:
@@ -354,9 +360,11 @@ class Board(object):
 
         checkers = self.get_checkers(pos, player)
         if player is not None:
-            
             if count == 5 and checkers > 5:    
-                return "+"
+                if checkers < 10:
+                    return checkers
+                else:
+                    return "+"
             elif checkers >= count:
                 return sign
             elif count > checkers:

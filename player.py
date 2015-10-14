@@ -13,7 +13,6 @@ class Player(object):
     def __init__(self, color, neural_network, learning_mode):
         """ Player can be initialized by specifying color:
             E.g.: 'white' or 0 vs. 'black' or 1. """
-        
         self.neural_network = neural_network
         # the mode indicates whether the board backprops errors,
         # or just predicts which boards are best for player
@@ -40,13 +39,13 @@ class Player(object):
         # the value representing the expected contribution of a distinct
         # board to win the game
         expected_utility = -1.0
-        # 
+        # next_out is the network output of the selected new board
         next_output = []
 
         # get all possible boards from BoardFactory
         all_boards = BoardFactory.generate_all_boards(backgammon.current_player, \
                                                         backgammon.dice, \
-                                                            backgammon.board)
+                                                        backgammon.board)
 
         # loop over all boards
         for board in all_boards:
@@ -80,6 +79,7 @@ class Player(object):
         # the net returns the array = [white_odds, black_odds]
         
         # check if this player is white, and say no to racism!
+        # maybe only use the one output for the specific color
         if self.color == Board.WHITE:
             # simple average of the probabilities
             # one might also apply Bayes' Rule
@@ -129,8 +129,8 @@ class Player(object):
             of the current gammon situation. """
         current_player = self.color
         
-        board = board_obj.get_board()
-        colors = board_obj.get_colors()
+        board = board_obj.board
+        colors = board_obj.colors
         bar = [board_obj.get_bar(Board.WHITE), board_obj.get_bar(Board.BLACK)]
         off = [board_obj.get_off(Board.WHITE), board_obj.get_off(Board.BLACK)]
         

@@ -1,7 +1,7 @@
 from board import Board, Dice
 from player import Player, RandomPlayer
 from neural_net import NeuralNetwork
-
+import sys
 
 class Backgammon(object):
     """ This class wraps all of the backgammon functionality. Basically,
@@ -16,10 +16,11 @@ class Backgammon(object):
         self.board = Board()
         
         # the neural network used by the players, both players share the same net
-        if restore_net == False:
-            self.neural_network = NeuralNetwork(198, 40, 2, restore_from_file=False)
-        elif restore_net == True:
-            self.neural_network = NeuralNetwork(0, 0, 0, restore_from_file=True)
+        if not restore_net:
+            self.neural_network = NeuralNetwork(input_size=198, hidden_size=40, \
+                                                                output_size=2)
+        elif restore_net:
+            self.neural_network = NeuralNetwork(restore_from_file=True)
         
         # list of players
         if training_mode:
@@ -120,23 +121,41 @@ class Backgammon(object):
         # update player
         self.current_player = Board.get_opponent(self.current_player)
 
+    @staticmethod
+    def progress(count, total, suffix=''):
+        bar_len = 60
+        filled_len = int(round(bar_len * count / float(total)))
+
+        percents = round(100.0 * count / float(total), 1)
+        bar = '=' * filled_len + '-' * (bar_len - filled_len)
+
+        sys.stdout.write("\r[%s] %s%s %s" %(bar, percents, '%', suffix))
+        
+        sys.stdout.flush()
+
+
 if __name__ == '__main__':
-    
-    bg = Backgammon(training_mode=False, restore_net=True)
+        
+    bg = Backgammon(training_mode=True, restore_net=True)
     wins = [0,0]
+    n_games = 10
     
-    for i in range(100):
+    print "\nTraining the neural net ..."
+    
+    for i in range(n_games):
         bg.run()
-        print "Game {}, won by {}".format(i + 1, bg.winner.identity)
+        #print "Game {}, won by {}".format(i + 1, bg.winner.identity)
         if bg.winner.color == 0:
             wins[0] += 1
         else:
             wins[1] += 1
+        
+        bg.progress(i+1, n_games, "[G: %s, w: %s, b: %s ]" %(i+1, wins[0], wins[1]))
         bg.reset()
     
-    #bg.save_network()
- 
-    print wins
-
+    bg.save_network()
     
+    print ""
+
+
 
