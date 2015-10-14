@@ -146,7 +146,8 @@ class NeuralNetwork(object):
             self.input_size = input_size
             self.output_size = output_size
             self.hidden_size = hidden_size
-            
+            # number of games the network was trained
+            self.num_games = 0
             # dict containing all the network's layers
             # naming convention will use the keys: input, hidden, output
             self.layer_dict = {}
@@ -169,6 +170,7 @@ class NeuralNetwork(object):
             self.layer_dict = {}
             
             # restore layer sizes 
+            self.num_games = saved_things['num_games']
             self.input_size = saved_things['input_size']
             self.hidden_size = saved_things['hidden_size']
             self.output_size = saved_things['output_size']
@@ -206,6 +208,9 @@ class NeuralNetwork(object):
         # initialize eligibility traces
         self.reset_all_traces()
     
+    def update_counter(self):
+        self.num_games += 1
+
     def reset_all_traces(self):
         """ Resets the eligibility trace arrays of all layers to np.zeros-arrays. """
         # dont set e_traces for input layer, it has none
@@ -306,7 +311,8 @@ class NeuralNetwork(object):
     def save_network(self):
         """ Save the current state of the network to file. """
         # save weights of hidden and output layer
-        things_to_save = { 'input_size': self.layer_dict['input'].size, \
+        things_to_save = {  'num_games': self.num_games, \
+                            'input_size': self.layer_dict['input'].size, \
                             'hidden_size': self.layer_dict['hidden'].size, \
                             'hidden_weights': self.layer_dict['hidden'].weights, \
                             'output_size': self.layer_dict['output'].size, \

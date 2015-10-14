@@ -123,6 +123,8 @@ class Player(object):
             self.neural_network.back_prop(current_output, actual_output)
             # reset e_traces after each game ended
             self.neural_network.reset_all_traces()
+            # increment number of training games
+            self.neural_network.update_counter()
 
     def board_to_vector(self, board_obj):
         """ Creates a 198-dimensional input vector
