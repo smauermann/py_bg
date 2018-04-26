@@ -141,7 +141,7 @@ if __name__ == '__main__':
     n_games = 10
     
     print "\nTraining the neural net ..."
-    print "Prior training games: %s" %(bg.neural_network.num_games)
+    print "Network experience: %s games" %(bg.neural_network.num_games)
     
     for i in range(n_games):
         bg.run()
